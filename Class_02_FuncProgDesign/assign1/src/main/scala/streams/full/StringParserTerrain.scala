@@ -48,19 +48,46 @@ trait StringParserTerrain extends GameDef {
     Pos(row, col)
   }
 
-  private lazy val vector: Vector[Vector[Char]] =
-    Vector(level.split("\n").map(str => Vector(str: _*)): _*)
+  lazy val startCharGrid: Vector[Vector[Char]] =
+    Vector(level.split("\n").takeWhile(_.trim.nonEmpty).map(str => Vector(str.trim: _*)): _*)
 
   lazy val startTerrain: Terrain = Terrain(
-    vector map (_ map {
+    startCharGrid map (_ map {
       case '-' => OutOfBounds
       case 'x' => HeavySwitch
       case '.' => SoftSwitch
       case _ => NormalTerrain
     }))
 
+  lazy val switchInfos: Map[Pos, Set[(Pos, SwitchAction)]] =
+    level.split("\n").drop(startCharGrid.length + 1) groupBy (str => str.takeWhile(_ != ' ')) map { case (switchPosStr:String, affectedArr:Array[String]) => {
+      (parsePos(switchPosStr), affectedArr map (str => {
+        val fields = str.split(" ")
+        val action = fields(2) match {
+          case x if x contains "Tog" => Toggle
+          case x if x contains "On" => TurnOn
+          case x if x contains "Off" => TurnOff
+          case _ => throw new Exception("Switch affect not recognized: " + fields(2))
+        }
+        (parsePos(fields(1)), action)
+      }))
+    }} mapValues(_.toSet)
 
-  lazy val startPos: Pos = findChar('S', vector)
-  lazy val goal: Pos = findChar('T', vector)
+  lazy val startPos: Pos = findChar('S', startCharGrid)
+  lazy val goal: Pos = findChar('T', startCharGrid)
 
+
+  def makeMoves(moves: List[Action]): BloxorzState =
+    moves.foldLeft(startState) { case (state, move) =>
+      require(state.isLegal) // The solution must always lead to legal blocks
+      state.transition(move)
+    }
+
+  def printTerrain(terrain: Terrain):Unit =
+    println(terrain.types map (_ map {
+      case OutOfBounds => '-'
+      case HeavySwitch => 'x'
+      case SoftSwitch => '.'
+      case NormalTerrain => 'o'
+    } mkString) mkString "\n")
 }

@@ -34,6 +34,12 @@ trait GameDef {
     def deltaCol(d: Int): Pos = copy(col = col + d)
   }
 
+  def parsePos(str: String): Pos = {
+    // Takes a string of the form "(x,y)"
+    val fields = str.split("[(,)]") filter (_.trim.nonEmpty)
+    Pos(fields(0).toInt, fields(1).toInt)
+  }
+
   /**
    * The position where the block is located initially.
    *
@@ -58,23 +64,61 @@ trait GameDef {
    */
 
   sealed abstract class TerrainType
+  trait SwitchTerrainType
   case object OutOfBounds   extends TerrainType
   case object NormalTerrain extends TerrainType
-  case object SoftSwitch    extends TerrainType
-  case object HeavySwitch   extends TerrainType
+  case object SoftSwitch    extends TerrainType with SwitchTerrainType
+  case object HeavySwitch   extends TerrainType with SwitchTerrainType
 
   case class Terrain(types: Vector[Vector[TerrainType]]) {
-    def canSupportBlock(pos: Pos): Boolean =
-      if (pos.row < 0 || pos.col < 0 || pos.row >= types.length || pos.col >= types(pos.row).length) false
-      else types(pos.row)(pos.col) match {
-        case OutOfBounds => false
-        case _ => true
-      }
+    def apply(pos: Pos): TerrainType = {
+      if (pos.row < 0 || pos.col < 0 || pos.row >= types.length || pos.col >= types(pos.row).length) OutOfBounds
+      else types(pos.row)(pos.col)
+    }
+
+    def canSupportBlock(pos: Pos): Boolean = this(pos) match {
+      case OutOfBounds => false
+      case _ => true
+    }
+
+    def updated(pos: Pos, terrainType: TerrainType): Terrain =
+      Terrain(types.updated(pos.row, types(pos.row).updated(pos.col, terrainType)))
 
     def respondToBlock(block: Block): Terrain = {
-      this
+      def getSwitchAffects(pos: Pos): Set[(Pos, SwitchAction)] = this(pos) match {
+        case SoftSwitch => switchInfos(pos)
+        case HeavySwitch if block.isStanding => switchInfos(pos)
+        case _ => Set()
+      }
+
+      val changesToMake = getSwitchAffects(block.b1) ++ getSwitchAffects(block.b2)
+
+      changesToMake.foldLeft(this){ case (terr, (affectedPos, action)) => terr.updated(affectedPos, action match {
+        case TurnOn => NormalTerrain
+        case TurnOff => OutOfBounds
+        case Toggle => terr(affectedPos) match {
+          case NormalTerrain => OutOfBounds
+          case OutOfBounds => NormalTerrain
+          case _ => throw new Error("toggling something that isn't normal or outOfBounds")
+        }
+      })}
     }
+
+    override def toString: String =
+      types map (_ map {
+        case OutOfBounds => '-'
+        case HeavySwitch => 'x'
+        case SoftSwitch => '.'
+        case NormalTerrain => 'o'
+      } mkString) mkString "\n"
   }
+
+  val switchInfos: Map[Pos, Set[(Pos, SwitchAction)]]
+  sealed trait SwitchAction
+  case object TurnOn  extends SwitchAction
+  case object TurnOff extends SwitchAction
+  case object Toggle  extends SwitchAction
+
 
   val startTerrain: Terrain
 
@@ -139,12 +183,14 @@ trait GameDef {
   case class BloxorzState(terrain: Terrain, block: Block) {
     def isLegal: Boolean = block.isLegal(terrain)
 
+    def transition(action: Action): BloxorzState = {
+      val nextBlock = block.applyAction(action)
+      val nextTerrain = terrain.respondToBlock(nextBlock)
+      BloxorzState(nextTerrain, nextBlock)
+    }
+
     def neighbors: List[(BloxorzState, Action)] =
-      List(Up, Down, Left, Right) map (action => {
-        val nextBlock = block.applyAction(action)
-        val nextTerrain = terrain.respondToBlock(nextBlock)
-        (BloxorzState(nextTerrain, nextBlock), action)
-      })
+      List(Up, Down, Left, Right) map (action => (this.transition(action), action))
 
     def legalNeighbors: List[(BloxorzState, Action)] = neighbors filter { case (state, act) => state.isLegal }
   }
