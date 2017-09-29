@@ -8,10 +8,21 @@ object GameLevels extends App {
       println(title + ":")
       println(solution mkString "\n")
     }
+
+    def printPaths(limit: Int = -1): Unit = {
+      val streamToUse = if (limit < 0) pathsFromStart else pathsFromStart take (limit)
+
+      println()
+      println(title + ":")
+      for {
+        (state, actionList) <- streamToUse takeWhile{ case (state, actionList) => !done(state)}
+      } println(actionList)
+    }
   }
 
   // http://www.coolmath-games.com/0-bloxorz
 
+  /*
   new BloxorzLevel("Level 1", "780464",
     """ooo-------
       |oSoooo----
@@ -119,25 +130,25 @@ object GameLevels extends App {
       |
       |(1,13) (1,12) (1,2)""".stripMargin).solveAndPrint()
 
-//  new BloxorzLevel("Level 10", "300590",
-//    """ooo-----oooooo
-//      |oTo--o--oSoo@o
-//      |ooo-----oooo--
-//      |---------ooo--
-//      |-----------oo-
-//      |------------o-
-//      |------------o-
-//      |-----------oo-
-//      |----ooooo--oo-
-//      |----o.--oooxo-
-//      |
-//      |(1,12) (1,12) (1,9)
-//      |(9,5) (1,3) Tog
-//      |(9,5) (1,4) Tog
-//      |(9,11) (1,6) Tog
-//      |(9,11) (1,7) Tog
-//      |(9,11) (2,12) Tog
-//      |(9,11) (3,12) Tog""".stripMargin).solveAndPrint()
+  new BloxorzLevel("Level 10", "300590",
+    """ooo-----oooooo
+      |oTo--o--oSoo@o
+      |ooo-----oooo--
+      |---------ooo--
+      |-----------oo-
+      |------------o-
+      |------------o-
+      |-----------oo-
+      |----ooooo--oo-
+      |----o.--oooxo-
+      |
+      |(1,12) (1,12) (1,9)
+      |(9,5) (1,3) Tog
+      |(9,5) (1,4) Tog
+      |(9,11) (1,6) Tog
+      |(9,11) (1,7) Tog
+      |(9,11) (2,12) Tog
+      |(9,11) (3,12) Tog""".stripMargin).solveAndPrint()
 
   new BloxorzLevel("Level 11", "291709",
     """-oooo-------
@@ -207,10 +218,89 @@ object GameLevels extends App {
       |-o-----@-------
       |-o-----o-------
       |ooo---ooo--.oo-
-      |ooooooooooooTo-
+      |oSooooooooooTo-
       |ooo---ooo--.oo-
       |
       |(5,7) (1,13) (8,1)
-    """.stripMargin)
+      |(7,11) (8,10) Off
+      |(7,11) (8,9) Off
+      |(9,11) (8,10) Off
+      |(9,11) (8,9) Off
+      |(3,8) (1,5) Tog
+      |(3,8) (1,6) Tog
+      |(3,8) (1,10) Tog
+      |(3,8) (1,11) Tog
+      |(1,12) (1,5) Tog
+      |(1,12) (1,6) Tog
+      |(1,12) (2,2) Tog
+      |(1,12) (2,3) Tog""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 16", "000241",
+    """-@--------ooo
+      |@o@--xxo--oTo
+      |-@--------ooo
+      |-------------
+      |--ooo---ooo--
+      |--oSooooo@o--
+      |--ooo---ooo--
+      |
+      |(5,9) (0,1) (1,0)
+      |(1,2) (1,0) (1,2)
+      |(1,0) (1,2) (0,1)
+      |(2,1) (2,1) (1,0)
+      |(0,1) (1,7) (1,5)
+      |(1,5) (1,4) On
+      |(1,5) (1,3) On
+      |(1,6) (1,8) On
+      |(1,6) (1,9) On""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 17", "683596",
+    """ooo------------
+      |oSooooooo---ooo
+      |ooo-----oooooTo
+      |ooo---------xxo
+      |ooo------------
+      |ooo------------
+      |ooo----ooooox--
+      |oooooooo---oo--
+      |o.o--------oo--
+      |ooo--------ox--
+      |
+      |(8,1) (7,8) Tog
+      |(6,12) (2,7) On
+      |(9,12) (7,8) Off
+      |(9,12) (1,9) On
+      |(3,12) (6,6) Off
+      |(3,13) (6,6) On""".stripMargin).solveAndPrint()
+  */
+
+  new BloxorzLevel("Level 18", "284933",
+    """-------.-------
+      |oo.o---o-------
+      |ooooo--o-------
+      |o.Sooooo--oo--o
+      |ooooo---o---o--
+      |oo.o----o---o--
+      |o-------.--ooo-
+      |o---------ooTo-
+      |o--x------oooo-
+      |
+      |(1,2) (8,1) Off
+      |(1,2) (8,2) Off
+      |(1,2) (3,12) Off
+      |(1,2) (3,13) Off
+      |(3,1) (3,8) Off
+      |(3,1) (3,9) Off
+      |(5,2) (8,1) Off
+      |(5,2) (8,2) Off
+      |(5,2) (3,12) Off
+      |(5,2) (3,13) Off
+      |(0,7) (3,8) On
+      |(0,7) (3,9) On
+      |(6,8) (8,1) On
+      |(6,8) (8,2) On
+      |(6,8) (3,12) On
+      |(6,8) (3,13) On
+      |(8,3) (4,5) Tog""".stripMargin).solveAndPrint()
 }
 
