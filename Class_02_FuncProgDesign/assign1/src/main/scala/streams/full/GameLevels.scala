@@ -272,7 +272,6 @@ object GameLevels extends App {
       |(9,12) (1,9) On
       |(3,12) (6,6) Off
       |(3,13) (6,6) On""".stripMargin).solveAndPrint()
-  */
 
   new BloxorzLevel("Level 18", "284933",
     """-------.-------
@@ -302,5 +301,85 @@ object GameLevels extends App {
       |(6,8) (3,12) On
       |(6,8) (3,13) On
       |(8,3) (4,5) Tog""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 19", "119785",
+    """-Soooooooo.oooo
+      |-----oo------oo
+      |-----oo------oo
+      |-------------oo
+      |-------------oo
+      |ooo--oo--o.oooo
+      |oTo--oo--------
+      |ooo--oo--------
+      |-oo--oo--------
+      |-ooooooooo.ooo-
+      |
+      |(0,10) (5,7) Tog
+      |(0,10) (5,8) Tog
+      |(5,10) (9,2) Off
+      |(5,10) (9,3) Off
+      |(9,10) (9,2) On
+      |(9,10) (9,3) On""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 20", "543019",
+    """------------ooo
+      |--oooooooo--ooo
+      |--ooo--.So--ooo
+      |--ooo--ooo-----
+      |--o.o--@o.-----
+      |--ooo--ooo-----
+      |oooo---ooo--.oo
+      |o.----------ooo
+      |------------oTo
+      |------------ooo
+      |
+      |(4,9) (1,5) Off
+      |(4,9) (1,6) Off
+      |(2,7) (1,5) Off
+      |(2,7) (1,6) Off
+      |(4,7) (1,13) (7,13)
+      |(6,12) (6,11) Tog
+      |(6,12) (6,10) Tog
+      |(4,3) (1,5) Off
+      |(4,3) (1,6) Off
+      |(7,1) (1,11) Tog
+      |(7,1) (1,10) Tog""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 21", "728724",
+    """--------oo-----
+      |-------ooo-----
+      |oo--oooooo-----
+      |oSoooo--o------
+      |oooo----o---ooo
+      |-oo-----xooooTo
+      |--o-----xo--ooo
+      |--ooo---oo-----
+      |---ooo--oo-----
+      |----oooooo-----
+      |
+      |(5,8) (9,3) Tog
+      |(6,8) (7,5) Tog""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 22", "987319",
+    """-----oo----ooo
+      |---oooooo--oTo
+      |oooooo.ooooooo
+      |oSoo.--ooooo--
+      |ooo------ooo--
+      |-o--------o---
+      |-o--------o---
+      |-o-------oo---
+      |-oo------oo---
+      |--x------x----
+      |
+      |(3,4) (7,2) Off
+      |(3,4) (3,12) Off
+      |(2,6) (7,2) Off
+      |(2,6) (3,12) Off
+      |(9,9) (7,2) Tog
+      |(9,2) (3,12) Tog""".stripMargin).solveAndPrint()
+  */
+
+  new BloxorzLevel("Level 23", "293486", """""")
 }
 
