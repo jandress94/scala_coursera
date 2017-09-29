@@ -378,8 +378,8 @@ object GameLevels extends App {
       |(2,6) (3,12) Off
       |(9,9) (7,2) Tog
       |(9,2) (3,12) Tog""".stripMargin).solveAndPrint()
-  */
+  /*
 
-  new BloxorzLevel("Level 23", "293486", """""")
+//  new BloxorzLevel("Level 23", "293486", """""")
 }
 

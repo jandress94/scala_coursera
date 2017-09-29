@@ -89,20 +89,6 @@ trait StringParserTerrain extends GameDef {
       (pos, (parsePos(fields(0)), parsePos(fields(1))))
     }} toMap
 
-//  lazy val switchInfos: Map[Pos, Set[(Pos, SwitchAction)]] =
-//    level.split("\n").drop(startCharGrid.length + 1) groupBy (str => str.takeWhile(_ != ' ')) map { case (switchPosStr:String, affectedArr:Array[String]) => {
-//      (parsePos(switchPosStr), affectedArr map (str => {
-//        val fields = str.split(" ")
-//        val action = fields(2) match {
-//          case x if x contains "Tog" => Toggle
-//          case x if x contains "On" => TurnOn
-//          case x if x contains "Off" => TurnOff
-//          case _ => throw new Exception("Switch affect not recognized: " + fields(2))
-//        }
-//        (parsePos(fields(1)), action)
-//      }))
-//    }} mapValues(_.toSet)
-
   lazy val startPos: Pos = findChar('S', startCharGrid)
   lazy val goal: Pos = findChar('T', startCharGrid)
 

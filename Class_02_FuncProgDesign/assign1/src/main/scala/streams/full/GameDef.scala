@@ -247,14 +247,14 @@ trait GameDef {
       BloxorzState(nextTerrain, nextBlock)
     }
 
-    def neighbors: List[(BloxorzState, Action)] = {
-      val directionActions = List(Up, Down, Left, Right)
-      (block match {
-        case bb: BigBlock => directionActions
-        case sbp: SmallBlockPair => Space :: directionActions
-      }) map (action => (this.transition(action), action))
-    }
-//      List(Up, Down, Left, Right, Space) map (action => (this.transition(action), action))
+    def neighbors: List[(BloxorzState, Action)] =
+//      val directionActions = List(Up, Down, Left, Right)
+//      (block match {
+//        case bb: BigBlock => directionActions
+//        case sbp: SmallBlockPair => Space :: directionActions
+//      }) map (action => (this.transition(action), action))
+//    }
+      List(Up, Down, Left, Right, Space) map (action => (this.transition(action), action))
 
     def legalNeighbors: List[(BloxorzState, Action)] = neighbors filter { case (state, act) => state.isLegal }
   }

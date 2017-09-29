@@ -72,19 +72,6 @@ trait Solver extends GameDef {
       Stream.cons(initial.head, from(initial.tail ++ newLocs, explored ++ (newLocs map { case (s, m) => s})))
     }
   }
-//  def from(initial: Stream[(BloxorzState, List[Action])],
-//           explored: Set[BloxorzState]): Stream[(BloxorzState, List[Action])] = {
-//    if (initial.isEmpty) initial
-//    else {
-////      println(initial.head._2.length)
-//      val newLocs = for {
-//        (st, mvList) <- initial
-//        (newSt, newMvList) <- newNeighborsOnly(neighborsWithHistory(st, mvList), explored)
-//      } yield (newSt, newMvList)
-//
-//      initial ++ from(newLocs, explored ++ (newLocs map { case (st, mvList) => st }).toSet)
-//    }
-//  }
 
   /**
    * The stream of all paths that begin at the starting block.
