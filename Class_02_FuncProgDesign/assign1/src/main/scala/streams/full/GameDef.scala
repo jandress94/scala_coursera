@@ -32,6 +32,8 @@ trait GameDef {
 
     /** The position obtained by changing the `col` coordinate by `d` */
     def deltaCol(d: Int): Pos = copy(col = col + d)
+
+    def distTo(that: Pos): Int = math.abs(this.row - that.row) + math.abs(this.col - that.col)
   }
 
   def parsePos(str: String): Pos = {
@@ -63,18 +65,24 @@ trait GameDef {
    * is the vertical one and increases from top to bottom.
    */
 
-  sealed abstract class TerrainType
-  trait SwitchTerrainType
-  case object OutOfBounds   extends TerrainType
-  case object NormalTerrain extends TerrainType
-  case object SoftSwitch    extends TerrainType with SwitchTerrainType
-  case object HeavySwitch   extends TerrainType with SwitchTerrainType
+  sealed abstract class TerrainType(val cubeSupportMax: Int)
+  trait SwitchTerrainType {
+    val requiresStanding: Boolean
+  }
+  case object OutOfBounds    extends TerrainType(0)
+  case object NormalTerrain  extends TerrainType(2)
+  case object FragileTerrain extends TerrainType(1)
+  case object SoftSwitch     extends TerrainType(2) with SwitchTerrainType { val requiresStanding: Boolean = false }
+  case object HeavySwitch    extends TerrainType(2) with SwitchTerrainType { val requiresStanding: Boolean = true }
+  case object Transporter    extends TerrainType(2) with SwitchTerrainType { val requiresStanding: Boolean = true }
 
   case class Terrain(types: Vector[Vector[TerrainType]]) {
     def apply(pos: Pos): TerrainType = {
       if (pos.row < 0 || pos.col < 0 || pos.row >= types.length || pos.col >= types(pos.row).length) OutOfBounds
       else types(pos.row)(pos.col)
     }
+
+    def isLegal(block: Block): Boolean = block.getPositions groupBy (pos => pos) mapValues (_.length) forall { case (pos, count) => this(pos).cubeSupportMax >= count }
 
     def canSupportBlock(pos: Pos): Boolean = this(pos) match {
       case OutOfBounds => false
@@ -84,24 +92,33 @@ trait GameDef {
     def updated(pos: Pos, terrainType: TerrainType): Terrain =
       Terrain(types.updated(pos.row, types(pos.row).updated(pos.col, terrainType)))
 
-    def respondToBlock(block: Block): Terrain = {
-      def getSwitchAffects(pos: Pos): Set[(Pos, SwitchAction)] = this(pos) match {
-        case SoftSwitch => switchInfos(pos)
-        case HeavySwitch if block.isStanding => switchInfos(pos)
-        case _ => Set()
+    def respondToBlock(block: Block): (Block, Terrain) = {
+      def getPressedLocationsOfType(SwitchType: SwitchTerrainType): Set[Pos] =
+        if (SwitchType.requiresStanding && !block.isStanding) Set()
+        else block.getPositions filter (pos => this(pos) match { case SwitchType => true; case _ => false }) toSet
+
+      val transportersPressed = getPressedLocationsOfType(Transporter)
+      val newBlockAfterTransporter = if (transportersPressed.isEmpty) block else {
+        val (newPos1, newPos2) = transportInfos(transportersPressed.head)
+        SmallBlockPair(newPos1, newPos2)
       }
 
-      val changesToMake = getSwitchAffects(block.b1) ++ getSwitchAffects(block.b2)
+      val softSwitchesPressed = getPressedLocationsOfType(SoftSwitch)
+      val heavySwitchesPressed = getPressedLocationsOfType(HeavySwitch)
+      val switchChanges = (softSwitchesPressed ++ heavySwitchesPressed) flatMap switchInfos.apply
 
-      changesToMake.foldLeft(this){ case (terr, (affectedPos, action)) => terr.updated(affectedPos, action match {
-        case TurnOn => NormalTerrain
-        case TurnOff => OutOfBounds
-        case Toggle => terr(affectedPos) match {
-          case NormalTerrain => OutOfBounds
-          case OutOfBounds => NormalTerrain
-          case _ => throw new Error("toggling something that isn't normal or outOfBounds")
-        }
-      })}
+      val newTerrAfterSwitches = switchChanges.foldLeft(this) {case (terr, (affectedPos, action)) =>
+        terr.updated(affectedPos, action match {
+          case TurnOn => NormalTerrain
+          case TurnOff => OutOfBounds
+          case Toggle => terr(affectedPos) match {
+            case NormalTerrain => OutOfBounds
+            case OutOfBounds => NormalTerrain
+            case _ => throw new Error("toggling something that isn't normal or outOfBounds")
+          }
+        })
+      }
+      (newBlockAfterTransporter, newTerrAfterSwitches)
     }
 
     override def toString: String =
@@ -110,6 +127,8 @@ trait GameDef {
         case HeavySwitch => 'x'
         case SoftSwitch => '.'
         case NormalTerrain => 'o'
+        case Transporter => '@'
+        case FragileTerrain => '!'
       } mkString) mkString "\n"
   }
 
@@ -119,25 +138,36 @@ trait GameDef {
   case object TurnOff extends SwitchAction
   case object Toggle  extends SwitchAction
 
+  val transportInfos: Map[Pos, (Pos, Pos)]
+
 
   val startTerrain: Terrain
 
   /**
-   * In Bloxorz, we can move left, right, Up or down.
+   * In Bloxorz, we can move left, right, up or down.
    * These moves are encoded as case objects.
+   *
+   * You can also press Space
    */
   sealed abstract class Action
   case object Left  extends Action
   case object Right extends Action
   case object Up    extends Action
   case object Down  extends Action
+  case object Space extends Action
+
+  sealed abstract class Block {
+    def applyAction(action: Action): Block
+    def getPositions: List[Pos]
+    def isStanding: Boolean
+  }
 
   /**
    * A block is represented by the position of the two cubes that
    * it consists of. We make sure that `b1` is lexicographically
    * smaller than `b2`.
    */
-  case class Block(b1: Pos, b2: Pos) {
+  case class BigBlock(b1: Pos, b2: Pos) extends Block {
 
     // checks the requirement mentioned above
     require(b1.row <= b2.row && b1.col <= b2.col, "Invalid block position: b1=" + b1 + ", b2=" + b2)
@@ -146,51 +176,85 @@ trait GameDef {
      * Returns a block where the `row` coordinates of `b1` and `b2` are
      * changed by `d1` and `d2`, respectively.
      */
-    def deltaRow(d1: Int, d2: Int) = Block(b1.deltaRow(d1), b2.deltaRow(d2))
+    def deltaRow(d1: Int, d2: Int) = BigBlock(b1.deltaRow(d1), b2.deltaRow(d2))
 
     /**
      * Returns a block where the `col` coordinates of `b1` and `b2` are
      * changed by `d1` and `d2`, respectively.
      */
-    def deltaCol(d1: Int, d2: Int) = Block(b1.deltaCol(d1), b2.deltaCol(d2))
+    def deltaCol(d1: Int, d2: Int) = BigBlock(b1.deltaCol(d1), b2.deltaCol(d2))
 
 
     /** The block obtained by moving left */
-    def applyAction(action: Action): Block = action match {
+    override def applyAction(action: Action): BigBlock = action match {
       case Up =>    if (isStanding) deltaRow(-2, -1) else if (b1.row == b2.row) deltaRow(-1, -1) else deltaRow(-1, -2)
       case Down =>  if (isStanding) deltaRow(1, 2)   else if (b1.row == b2.row) deltaRow(1, 1)   else deltaRow(2, 1)
       case Left =>  if (isStanding) deltaCol(-2, -1) else if (b1.row == b2.row) deltaCol(-1, -2) else deltaCol(-1, -1)
       case Right => if (isStanding) deltaCol(1, 2)   else if (b1.row == b2.row) deltaCol(2, 1)   else deltaCol(1, 1)
+      case Space => this
     }
+
+    override def getPositions: List[Pos] = List(b1, b2)
 
     /**
      * Returns `true` if the block is standing.
      */
-    def isStanding: Boolean = b1 == b2
-
-//      this match {
-//      case Block(Pos(r1, c1), Pos(r2, c2)) => r1 == r2 && c1 == c2
-//    }
-
-    /**
-     * Returns `true` if the block is entirely inside the terrain.
-     */
-    def isLegal(terrain: Terrain): Boolean = terrain.canSupportBlock(b1) && terrain.canSupportBlock(b2)
+    override def isStanding: Boolean = b1 == b2
   }
 
-  def startState: BloxorzState = BloxorzState(startTerrain, Block(startPos, startPos))
+  case class SmallBlockPair(b1: Pos, b2: Pos) extends Block {
+    private case class SmallBlock(b: Pos) extends Block {
+      override def applyAction(action: Action): SmallBlock = action match {
+        case Up =>    SmallBlock(b.deltaRow(-1))
+        case Down =>  SmallBlock(b.deltaRow(1))
+        case Left =>  SmallBlock(b.deltaCol(-1))
+        case Right => SmallBlock(b.deltaCol(1))
+        case Space => this
+      }
+
+      override def getPositions: List[Pos] = List(b)
+
+      override def isStanding: Boolean = false
+    }
+
+    private val sb1: SmallBlock = SmallBlock(b1)
+    private val sb2: SmallBlock = SmallBlock(b2)
+
+    override def applyAction(action: Action): Block = action match {
+      case Space => SmallBlockPair(b2, b1)
+      case _ => {
+        val movedBlockPos = sb1.applyAction(action).getPositions.head
+        if ((movedBlockPos distTo b2) == 1) {
+          if (movedBlockPos.row <= b2.row && movedBlockPos.col <= b2.col) BigBlock(movedBlockPos, b2) else BigBlock(b2, movedBlockPos)
+        }
+        else SmallBlockPair(movedBlockPos, b2)
+      }
+    }
+
+    override def getPositions: List[Pos] = sb1.getPositions ++ sb2.getPositions
+
+    override def isStanding: Boolean = false
+  }
+
+  def startState: BloxorzState = BloxorzState(startTerrain, BigBlock(startPos, startPos))
 
   case class BloxorzState(terrain: Terrain, block: Block) {
-    def isLegal: Boolean = block.isLegal(terrain)
+    def isLegal: Boolean = terrain.isLegal(block)
 
     def transition(action: Action): BloxorzState = {
-      val nextBlock = block.applyAction(action)
-      val nextTerrain = terrain.respondToBlock(nextBlock)
+      val movedBlock = block.applyAction(action)
+      val (nextBlock, nextTerrain) = terrain.respondToBlock(movedBlock)
       BloxorzState(nextTerrain, nextBlock)
     }
 
-    def neighbors: List[(BloxorzState, Action)] =
-      List(Up, Down, Left, Right) map (action => (this.transition(action), action))
+    def neighbors: List[(BloxorzState, Action)] = {
+      val directionActions = List(Up, Down, Left, Right)
+      (block match {
+        case bb: BigBlock => directionActions
+        case sbp: SmallBlockPair => Space :: directionActions
+      }) map (action => (this.transition(action), action))
+    }
+//      List(Up, Down, Left, Right, Space) map (action => (this.transition(action), action))
 
     def legalNeighbors: List[(BloxorzState, Action)] = neighbors filter { case (state, act) => state.isLegal }
   }

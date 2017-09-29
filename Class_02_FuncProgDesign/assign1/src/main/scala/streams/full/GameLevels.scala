@@ -106,6 +106,111 @@ object GameLevels extends App {
       |oooooo---oooooo
       |---------ooo---
       |---------ooo---
-      |---------ooo---""".stripMargin).solveAndPrint()
+      |---------ooo---
+      |
+      |(4,4) (1,10) (7,10)""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 9", "074355",
+    """oooo---o---oooo
+      |oSoo---o---oo@o
+      |ooooooooooooooo
+      |------oTo------
+      |------ooo------
+      |
+      |(1,13) (1,12) (1,2)""".stripMargin).solveAndPrint()
+
+//  new BloxorzLevel("Level 10", "300590",
+//    """ooo-----oooooo
+//      |oTo--o--oSoo@o
+//      |ooo-----oooo--
+//      |---------ooo--
+//      |-----------oo-
+//      |------------o-
+//      |------------o-
+//      |-----------oo-
+//      |----ooooo--oo-
+//      |----o.--oooxo-
+//      |
+//      |(1,12) (1,12) (1,9)
+//      |(9,5) (1,3) Tog
+//      |(9,5) (1,4) Tog
+//      |(9,11) (1,6) Tog
+//      |(9,11) (1,7) Tog
+//      |(9,11) (2,12) Tog
+//      |(9,11) (3,12) Tog""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 11", "291709",
+    """-oooo-------
+      |-oToo-------
+      |-ooo--------
+      |-o---oooooo-
+      |-o---oo--oo-
+      |Soooooo--ooo
+      |-----o.----o
+      |-----oooo--o
+      |-----ooooooo
+      |--------ooo-
+      |
+      |(6,6) (0,4) Off
+      |(6,6) (1,4) Off""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 12", "958640",
+    """------------x
+      |-----ooo--ooo
+      |-----oxooooo-
+      |---ooooo--oo-
+      |---oTo----oo-
+      |-ooooo---oooo
+      |ooSo-----oooo
+      |oooo--ooooo--
+      |-----ooo-----
+      |-----ooo-----
+      |
+      |(2,6) (2,12) Tog
+      |(0,12) (4,6) Tog""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 13", "448106",
+    """ooo!oooo!oooo-
+      |oo--------ooo-
+      |oo---------ooo
+      |ooo---ooo--oSo
+      |ooo!!!oTo--ooo
+      |ooo--!ooo--o--
+      |--o--!!!!!oo--
+      |--ooo!!o!!!---
+      |---oo!!!!!!---
+      |---ooo--oo----""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 14", "210362",
+    """--------ooo---
+      |---ooo--ooo---
+      |o--oSooooooooo
+      |o--ooo------xo
+      |o-----------oo
+      |o-----------oo
+      |o-------oooooo
+      |ooooo---ooo---
+      |-ooTo---ooo---
+      |--ooo---ooooox
+      |
+      |(9,13) (3,1) Tog
+      |(9,13) (3,2) Tog
+      |(3,12) (2,1) Tog
+      |(3,12) (2,2) Tog""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 15", "098598",
+    """-------ooo--ooo
+      |----oooooo--xoo
+      |oo--o--ooo--ooo
+      |ooooo---.------
+      |oo-------------
+      |-o-----@-------
+      |-o-----o-------
+      |ooo---ooo--.oo-
+      |ooooooooooooTo-
+      |ooo---ooo--.oo-
+      |
+      |(5,7) (1,13) (8,1)
+    """.stripMargin)
 }
 

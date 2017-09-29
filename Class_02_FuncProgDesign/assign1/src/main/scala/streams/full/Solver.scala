@@ -8,7 +8,7 @@ trait Solver extends GameDef {
   /**
    * Returns `true` if the block `b` is at the final position
    */
-  def done(state: BloxorzState): Boolean = state.block.b1 == goal && state.block.isStanding
+  def done(state: BloxorzState): Boolean = state.block.getPositions.head == goal && state.block.isStanding
 
   /**
    * This function takes two arguments: the current block `b` and

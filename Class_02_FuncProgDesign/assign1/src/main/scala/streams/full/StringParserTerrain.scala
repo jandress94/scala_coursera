@@ -56,38 +56,59 @@ trait StringParserTerrain extends GameDef {
       case '-' => OutOfBounds
       case 'x' => HeavySwitch
       case '.' => SoftSwitch
+      case '@' => Transporter
+      case '!' => FragileTerrain
       case _ => NormalTerrain
     }))
 
+  lazy val infos: List[(Pos, String)] =
+    level.split("\n").drop(startCharGrid.length + 1) map (str => {
+      val (switchPosStr, restStr) = str.span(_ != ' ')
+      (parsePos(switchPosStr), restStr.tail)
+    }) toList
+
   lazy val switchInfos: Map[Pos, Set[(Pos, SwitchAction)]] =
-    level.split("\n").drop(startCharGrid.length + 1) groupBy (str => str.takeWhile(_ != ' ')) map { case (switchPosStr:String, affectedArr:Array[String]) => {
-      (parsePos(switchPosStr), affectedArr map (str => {
-        val fields = str.split(" ")
-        val action = fields(2) match {
-          case x if x contains "Tog" => Toggle
-          case x if x contains "On" => TurnOn
-          case x if x contains "Off" => TurnOff
-          case _ => throw new Exception("Switch affect not recognized: " + fields(2))
-        }
-        (parsePos(fields(1)), action)
-      }))
-    }} mapValues(_.toSet)
+    infos filter { case (pos, str) => startTerrain(pos) match {
+      case SoftSwitch => true; case HeavySwitch => true; case _ => false
+    }} groupBy (_._1) mapValues (_ map { case (pos, str) => {
+      val fields = str.split(" ")
+      val action = fields(1) match {
+        case x if x contains "Tog" => Toggle
+        case x if x contains "On" => TurnOn
+        case x if x contains "Off" => TurnOff
+        case _ => throw new Exception("Switch affect not recognized: " + fields(1))
+      }
+      (parsePos(fields(0)), action)
+    } } toSet)
+
+  lazy val transportInfos: Map[Pos, (Pos, Pos)] =
+    infos filter { case (pos, str) => startTerrain(pos) match {
+      case Transporter => true; case _ => false
+    }} map { case (pos, str) => {
+      val fields = str.split(" ")
+      (pos, (parsePos(fields(0)), parsePos(fields(1))))
+    }} toMap
+
+//  lazy val switchInfos: Map[Pos, Set[(Pos, SwitchAction)]] =
+//    level.split("\n").drop(startCharGrid.length + 1) groupBy (str => str.takeWhile(_ != ' ')) map { case (switchPosStr:String, affectedArr:Array[String]) => {
+//      (parsePos(switchPosStr), affectedArr map (str => {
+//        val fields = str.split(" ")
+//        val action = fields(2) match {
+//          case x if x contains "Tog" => Toggle
+//          case x if x contains "On" => TurnOn
+//          case x if x contains "Off" => TurnOff
+//          case _ => throw new Exception("Switch affect not recognized: " + fields(2))
+//        }
+//        (parsePos(fields(1)), action)
+//      }))
+//    }} mapValues(_.toSet)
 
   lazy val startPos: Pos = findChar('S', startCharGrid)
   lazy val goal: Pos = findChar('T', startCharGrid)
-
 
   def makeMoves(moves: List[Action]): BloxorzState =
     moves.foldLeft(startState) { case (state, move) =>
       require(state.isLegal) // The solution must always lead to legal blocks
       state.transition(move)
     }
-
-  def printTerrain(terrain: Terrain):Unit =
-    println(terrain.types map (_ map {
-      case OutOfBounds => '-'
-      case HeavySwitch => 'x'
-      case SoftSwitch => '.'
-      case NormalTerrain => 'o'
-    } mkString) mkString "\n")
 }
