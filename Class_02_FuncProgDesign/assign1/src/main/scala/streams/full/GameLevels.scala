@@ -18,11 +18,18 @@ object GameLevels extends App {
         (state, actionList) <- streamToUse takeWhile{ case (state, actionList) => !done(state)}
       } println(actionList)
     }
+
+    def printStartStateSwitches(): Unit =
+      for {
+        row <- startTerrain.types.indices
+        col <- startTerrain.types(row).indices
+        if {startTerrain.types(row)(col) match { case s: SwitchTerrainType => true; case _ => false}}
+      } println(startTerrain.types(row)(col) + " at (" + row + "," + col + ")")
   }
 
   // http://www.coolmath-games.com/0-bloxorz
 
-  /*
+  
   new BloxorzLevel("Level 1", "780464",
     """ooo-------
       |oSoooo----
@@ -378,8 +385,271 @@ object GameLevels extends App {
       |(2,6) (3,12) Off
       |(9,9) (7,2) Tog
       |(9,2) (3,12) Tog""".stripMargin).solveAndPrint()
-  /*
 
-//  new BloxorzLevel("Level 23", "293486", """""")
+  new BloxorzLevel("Level 23", "293486",
+    """-ooo--------ooo
+      |-oxo--------o.o
+      |-ooo---oooooooo
+      |-ooo---oTo--oo.
+      |o---o--ooo----o
+      |.---o--!!!----o
+      |o--ooo!!!!!oooo
+      |---oSo!!!!!o@o-
+      |---ooo!!!!!ooo-
+      |---ooooo-------
+      |
+      |(3,14) (2,11) Off
+      |(3,14) (2,10) Off
+      |(3,14) (6,14) Off
+      |(1,13) (6,1) On
+      |(1,13) (6,2) On
+      |(1,13) (9,8) Tog
+      |(7,12) (7,12) (2,2)
+      |(5,0) (3,0) On
+      |(5,0) (6,1) Off
+      |(5,0) (6,2) Off
+      |(1,2) (3,4) On""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 24", "088198",
+    """----------oooo
+      |----oooooooxo@
+      |-S--oxo---oooo
+      |xo--oo------o-
+      |oo--o-------o-
+      |ooooo-----ooo-
+      |ooo--ooo--oTo-
+      |-----xo---ooo-
+      |
+      |(1,11) (2,2) On
+      |(1,11) (2,3) On
+      |(1,13) (6,5) (6,7)
+      |(3,0) (1,3) On
+      |(2,5) (7,7) On
+      |(7,5) (6,8) On
+      |(7,5) (6,9) On""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 25", "250453",
+    """--oo----------
+      |--ooo---------
+      |--oo.-----ooo-
+      |---oooo---oTo-
+      |------oo--ooo-
+      |-oo---oo------
+      |ooxooooo------
+      |oSo---oo---ooo
+      |ooo---oo.ooooo
+      |-----------ooo
+      |
+      |(6,2) (4,8) On
+      |(6,2) (4,9) On
+      |(8,8) (3,7) On
+      |(8,8) (6,4) Off
+      |(8,8) (6,5) Off
+      |(2,4) (4,8) Tog
+      |(2,4) (4,9) Tog
+      |(2,4) (2,13) Tog
+      |(2,4) (3,13) Tog""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 26", "426329",
+    """-----oooo----@
+      |-----oo.ooo--o
+      |----ooooooo--o
+      |oooooooo--oooo
+      |ooo---o---oo--
+      |ooo---o---S---
+      |-o----ooo-----
+      |-x----oTo-----
+      |------ooo-----
+      |
+      |(1,7) (3,2) Off
+      |(1,7) (3,3) Off
+      |(0,13) (3,12) (5,10)
+      |(7,1) (4,3) On
+      |(7,1) (7,9) On""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 27", "660141",
+    """ooo----oooooooo
+      |oSooooooooo--oo
+      |ooo----oo----oo
+      |------------oxo
+      |------------oo-
+      |ooo--!!!!o--..-
+      |oTo!!!!!!!--ooo
+      |ooo!!!!!!!!!ooo
+      |-----!!!!!!!ooo
+      |------oooo-----
+      |
+      |(3,13) (9,6) Off
+      |(3,13) (9,9) Off
+      |(5,13) (9,9) Off
+      |(5,12) (9,6) Off""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 28", "769721",
+    """-oooooo--------
+      |-oo--ooo-------
+      |!!S--oooo------
+      |!!-----ooo-----
+      |!!------ooo----
+      |!ooo-----oo@---
+      |-oTo------ooooo
+      |-oooooo---o.ooo
+      |--o--oo---ooo--
+      |--o--oooooooo--
+      |
+      |(7,11) (0,3) Off
+      |(7,11) (0,4) Off
+      |(7,11) (9,8) Off
+      |(7,11) (9,9) Off
+      |(5,11) (6,14) (9,12)""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 29", "691859",
+    """--.ooo---o--x--
+      |-----o---o-----
+      |-----ooooo-----
+      |x--ooooSoooo--x
+      |-----ooooo-----
+      |------o--o-----
+      |------o--ooo.--
+      |ooo--oo--o-----
+      |oTo--o---o-----
+      |ooo------ooo.--
+      |
+      |(0,2) (0,10) On
+      |(0,2) (0,11) On
+      |(0,2) (6,10) Off
+      |(0,2) (6,11) Off
+      |(0,12) (6,5) On
+      |(0,12) (7,5) On
+      |(9,12) (0,10) Off
+      |(9,12) (0,11) Off
+      |(9,12) (0,3) Off
+      |(9,12) (0,4) Off
+      |(9,12) (6,10) Off
+      |(9,12) (6,11) Off
+      |(9,12) (3,12) On
+      |(9,12) (3,13) On
+      |(3,14) (9,3) On
+      |(6,12) (3,1) On
+      |(6,12) (3,2) On
+      |(3,0) (8,3) On
+      |(3,0) (8,4) On
+      |(3,0) (9,10) Off
+      |(3,0) (9,11) Off""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 30", "280351",
+    """---ooooo!!oooo-
+      |---oToo-----!o-
+      |---ooo------!ox
+      |-------!ooooooo
+      |--S----!!-----o
+      |-xo!---!!-----o
+      |!!!!---oo----oo
+      |!!!o!o!!o!--xo-
+      |o!!!!!!!!!!!o--
+      |-!o!!!--!!!!o--
+      |
+      |(5,1) (3,10) On
+      |(5,1) (3,11) On
+      |(7,12) (7,14) Tog
+      |(2,14) (3,10) Off
+      |(2,14) (3,11) Off
+      |(2,14) (6,12) On
+      |(2,14) (6,9) On""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 31", "138620",
+    """-----------ooo-
+      |-ooo----x--oTo-
+      |-oooooooo--ooo-
+      |-ooo--ooo---o--
+      |-!!!--.oo---!--
+      |--!---ooo--!!!-
+      |--o---ooo--ooo-
+      |oooo--o.ooooSo-
+      |ooxo--x----ooo-
+      |oooo-----------
+      |
+      |(7,7) (2,4) Off
+      |(7,7) (2,5) Off
+      |(7,7) (2,9) Off
+      |(7,7) (2,10) Off
+      |(7,7) (7,4) Off
+      |(7,7) (7,5) Off
+      |(7,7) (7,9) Off
+      |(7,7) (7,10) Off
+      |(4,6) (2,4) Off
+      |(4,6) (2,5) Off
+      |(4,6) (2,9) Off
+      |(4,6) (2,10) Off
+      |(4,6) (7,4) Off
+      |(4,6) (7,5) Off
+      |(4,6) (7,9) Off
+      |(4,6) (7,10) Off
+      |(8,6) (7,4) Tog
+      |(8,6) (7,5) Tog
+      |(1,8) (2,9) Tog
+      |(1,8) (2,10) Tog
+      |(8,2) (2,4) Off
+      |(8,2) (2,5) Off
+      |(8,2) (0,14) On
+      |(8,2) (1,14) On
+      |(8,2) (2,14) On""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 32", "879021",
+    """------------ox
+      |--oooooo---ooo
+      |-ooo--oo--oxoo
+      |-oTo---ooooo--
+      |-ooo----ooo---
+      |---------oo---
+      |----ooo--oS---
+      |oo--oxo--oo---
+      |oo--ooooooo---
+      |
+      |(2,11) (8,2) Tog
+      |(2,11) (8,3) Tog
+      |(0,13) (1,4) Tog
+      |(0,13) (1,5) Tog
+      |(0,13) (7,2) Tog
+      |(0,13) (7,3) Tog
+      |(7,5) (2,4) Tog
+      |(7,5) (2,5) Tog""".stripMargin).solveAndPrint()
+
+  new BloxorzLevel("Level 33", "614955",
+    """-----oo.ooo----
+      |-----oooooo----
+      |ooo--.oo.ooooo-
+      |oSooooooo..oo.-
+      |-----oo.oo.ooo-
+      |-----oooooo.oo-
+      |ooo--oooooo.ooo
+      |oToooo.o--ooo.x
+      |ooo--ooo---oooo
+      |ooo---------ooo
+      |
+      |(7,14) (1,11) On
+      |(0,7) (7,3) Off
+      |(0,7) (7,4) Off
+      |(2,5) (7,3) Off
+      |(2,5) (7,4) Off
+      |(2,8) (7,3) Off
+      |(2,8) (7,4) Off
+      |(3,9) (7,3) Off
+      |(3,9) (7,4) Off
+      |(3,10) (7,3) Off
+      |(3,10) (7,4) Off
+      |(3,13) (7,3) Off
+      |(3,13) (7,4) Off
+      |(4,7) (7,3) Off
+      |(4,7) (7,4) Off
+      |(4,10) (7,3) Off
+      |(4,10) (7,4) Off
+      |(5,11) (7,3) Off
+      |(5,11) (7,4) Off
+      |(6,11) (7,3) Off
+      |(6,11) (7,4) Off
+      |(7,6) (7,3) Off
+      |(7,6) (7,4) Off
+      |(7,13) (7,3) Off
+      |(7,13) (7,4) Off""".stripMargin).solveAndPrint()
 }
 
