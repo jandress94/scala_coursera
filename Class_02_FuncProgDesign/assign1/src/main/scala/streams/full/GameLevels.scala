@@ -29,7 +29,7 @@ object GameLevels extends App {
 
   // http://www.coolmath-games.com/0-bloxorz
 
-  
+
   new BloxorzLevel("Level 1", "780464",
     """ooo-------
       |oSoooo----
